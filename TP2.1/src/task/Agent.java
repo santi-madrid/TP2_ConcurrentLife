@@ -26,7 +26,7 @@ public class Agent implements Runnable{
     @Override
     public void run(){
         while(count.getCount1()<186) {
-            k = monitor.fireTransition(transition);
+            /*k = monitor.fireTransition(transition);
             while (k==false){
                 if(count.getExit1()){
                     break;
@@ -37,7 +37,7 @@ public class Agent implements Runnable{
                 Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
             if(transition==2) {
                 k = monitor.fireTransition(5);
                 while(k==false){

@@ -22,6 +22,11 @@ public class Main {
         }
 
         for(int i=0; i<2; i++){
+            thread=factory.newThread(new Red(sharedMonitor, sharedCounter1 , i));
+            thread.start();
+        }
+
+        for(int i=0; i<2; i++){
             thread=factory.newThread(new Agent(sharedMonitor, sharedCounter1 , i));//tambien tarea del hilo
             thread.start();
         }
@@ -40,7 +45,6 @@ public class Main {
             thread=factory.newThread(exit);//tambien tarea del hilo
             thread.start();
         }
-
 
     }
 }

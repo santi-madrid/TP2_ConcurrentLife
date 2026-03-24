@@ -2,7 +2,7 @@ package task;
 import util.*;
 import java.util.concurrent.TimeUnit;
 
-public class Door implements Runnable {
+public class    Door implements Runnable {
     private Monitor monitor;
     private int transition;
     private int count;
