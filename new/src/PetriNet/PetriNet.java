@@ -1,11 +1,14 @@
+package PetriNet;
+
+import config.PetriNetConfig;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class PetriNet {
   private LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
 
   /* Constantes de clase */
-  private static final int PLACES = 15;
-  private static final int TRANSITIONS = 12;
+  private static final int PLACES = PetriNetConfig.PLACES;
+  private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
 
   // Variables de instancia
   private int[] marking;
