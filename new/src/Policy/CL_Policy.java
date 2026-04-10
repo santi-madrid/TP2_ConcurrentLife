@@ -15,24 +15,24 @@ public class CL_Policy {
   private static final double P6_PRIORITY_THRESHOLD = 0.75;
   private static final double P11_PRIORITY_THRESHOLD = 0.80;
 
-  private boolean balanced;
+  private final boolean balanced;
 
-  private Agent1Task agent1;
-  private Agent2Task agent2;
-  private ConfirmationTask confirmation;
-  private CancellationTask cancelation;
+  private final Agent1Task agent1;
+  private final Agent2Task agent2;
+  private final ConfirmationTask confirmation;
+  private final CancellationTask cancellation;
 
   public CL_Policy(
       boolean balanced,
       Agent1Task agent1,
       Agent2Task agent2,
       ConfirmationTask confirmation,
-      CancellationTask cancelation) {
+      CancellationTask cancellation) {
     this.balanced = balanced;
     this.agent1 = agent1;
     this.agent2 = agent2;
     this.confirmation = confirmation;
-    this.cancelation = cancelation;
+    this.cancellation = cancellation;
   }
 
   public boolean isBalanced() {
@@ -69,12 +69,12 @@ public class CL_Policy {
     }
 
     if (balanced) {
-      return confirmation.getConfirmations() < cancelation.getCancellations()
+      return confirmation.getConfirmations() < cancellation.getCancellations()
           ? TRANSITION_P11
           : TRANSITION_P12;
     }
 
-    int totalDecisions = confirmation.getConfirmations() + cancelation.getCancellations();
+    int totalDecisions = confirmation.getConfirmations() + cancellation.getCancellations();
     return confirmation.getConfirmations() <= totalDecisions * P11_PRIORITY_THRESHOLD
         ? TRANSITION_P11
         : TRANSITION_P12;
