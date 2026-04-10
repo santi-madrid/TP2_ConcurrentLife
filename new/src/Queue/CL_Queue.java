@@ -8,8 +8,8 @@ public class CL_Queue {
   /* Constantes de clase */
   private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
 
-  private Semaphore[] waitingThreads;
-  private int[] waitingTransitions;
+  private final Semaphore[] waitingThreads;
+  private final int[] waitingTransitions;
 
   public CL_Queue() {
     this.waitingThreads = new Semaphore[TRANSITIONS];
@@ -18,15 +18,6 @@ public class CL_Queue {
     for (int i = 0; i < TRANSITIONS; i++) {
       this.waitingThreads[i] = new Semaphore(0, true);
     }
-  }
-
-  public boolean hasWaitingThreads() {
-    for (int i = 0; i < TRANSITIONS; i++) {
-      if (waitingThreads[i].hasQueuedThreads()) {
-        return false;
-      }
-    }
-    return true;
   }
 
   public int[] getWaitingTransitions() {
