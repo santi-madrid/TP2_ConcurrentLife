@@ -4,7 +4,7 @@ import config.PetriNetConfig;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class PetriNet {
-  private LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
+  private final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
 
   /* Constantes de clase */
   private static final int PLACES = PetriNetConfig.PLACES;
@@ -23,7 +23,6 @@ public class PetriNet {
   public PetriNet() {
     // marking.length == PLACES
     marking = new int[] {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
-    // enabledTransitions.length == TRANSITIONS
     enabledTransitions = new int[TRANSITIONS];
     incidenceMatrix =
         new int[][] {
@@ -44,8 +43,7 @@ public class PetriNet {
           {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, -1},
         };
 
-    int[] currentEnabledTransitions = checkEnabledTransitions();
-    setEnabledTransitions(currentEnabledTransitions);
+    setEnabledTransitions(checkEnabledTransitions());
   }
 
   public LinkedBlockingQueue<Integer> getQueue() {
@@ -143,8 +141,7 @@ public class PetriNet {
   public int[] checkEnabledTransitions() {
     int[] calcEnTransitions = new int[TRANSITIONS];
 
-    markTransitionIfEnabled(
-        calcEnTransitions, 0, marking[0] >= 1 && marking[1] == 1 && marking[4] >= 1);
+    markTransitionIfEnabled(calcEnTransitions, 0, marking[0] >= 1 && marking[4] >= 1);
     markTransitionIfEnabled(calcEnTransitions, 1, marking[2] == 1);
     markTransitionIfEnabled(calcEnTransitions, 2, marking[3] >= 1 && marking[6] == 1);
     markTransitionIfEnabled(calcEnTransitions, 3, marking[3] >= 1 && marking[7] == 1);
@@ -164,7 +161,7 @@ public class PetriNet {
     int firedTransition = -1;
     int firedCount = 0;
 
-    for (int i = 0; i < PLACES; i++) {
+    for (int i = 0; i < TRANSITIONS; i++) {
       if (firingVector[i] == 1) {
         firedTransition = i;
         firedCount++;
@@ -200,8 +197,7 @@ public class PetriNet {
               + java.util.Arrays.toString(marking));
     }
 
-    int[] currentEnabledTransitions = checkEnabledTransitions();
-    setEnabledTransitions(currentEnabledTransitions);
+    setEnabledTransitions(checkEnabledTransitions());
   }
 
   // todo TEMPORAL PN METHODS
