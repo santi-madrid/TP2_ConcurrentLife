@@ -16,6 +16,7 @@
     </properties>
 
     <build>
+        <sourceDirectory>new/src</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
