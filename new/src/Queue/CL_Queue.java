@@ -1,4 +1,4 @@
-package CL_Queue;
+package Queue;
 
 import config.PetriNetConfig;
 import java.util.concurrent.Semaphore;
@@ -33,9 +33,13 @@ public class CL_Queue {
     return waitingTransitions;
   }
 
-  public void acquireTransition(int transition) throws InterruptedException {
-    waitingTransitions[transition] = 1; // Marcamos que hay un hilo esperando por esta transición.
-    waitingThreads[transition].acquire();
+  public void acquireTransition(int transition) {
+    waitingTransitions[transition] = 1;
+    try {
+      waitingThreads[transition].acquire();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void releaseTransition(int transition) {
