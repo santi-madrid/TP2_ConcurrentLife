@@ -48,6 +48,10 @@ public class Monitor implements MonInterface {
     this.policy = policy;
   }
 
+  public CL_Policy getPolicy() {
+    return policy;
+  }
+
   private void acquireMutex(int transition) {
     try {
       mutex.acquire();

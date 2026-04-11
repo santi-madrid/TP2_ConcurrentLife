@@ -186,11 +186,7 @@ public class PetriNet {
     queue.offer(getFiredTransition(firingVector));
 
     if (checkPlaceInvariants()) {
-      System.out.println(
-          "Transition "
-              + lastFiredTransition
-              + " fired successfully. Current marking: "
-              + java.util.Arrays.toString(marking));
+
     } else {
       throw new IllegalStateException(
           "The place invariants have been violated. Current marking: "

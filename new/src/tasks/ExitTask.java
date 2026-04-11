@@ -7,6 +7,7 @@ public class ExitTask extends Thread {
   private final int totalClients;
   private final Monitor monitor;
   private int servedClients;
+  private static final int delay = 0;
 
   public ExitTask(Monitor monitor, int totalClients) {
     this.setName("Exit");
@@ -21,6 +22,11 @@ public class ExitTask extends Thread {
     while (servedClients < totalClients) {
       if (monitor.fireTransition(TRANSITION_P14)) {
         servedClients++;
+        try {
+          sleep(delay);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
         System.out.println(
             "Salieron "
                 + servedClients
