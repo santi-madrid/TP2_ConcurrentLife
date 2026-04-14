@@ -5,16 +5,20 @@ import java.util.concurrent.Semaphore;
 
 public class Monitor implements MonInterface {
   private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_GRAY = "\u001B[90m";
 
   private final Semaphore mutex = new Semaphore(1, true);
   private final CL_Queue queue = new CL_Queue();
   private final PetriNet rdp;
+  private final boolean debugEnabled;
   private CL_Policy policy;
   private CL_Logger logger;
   private boolean retryFire;
 
-  public Monitor(PetriNet rdp) {
+  public Monitor(PetriNet rdp, boolean debugEnabled) {
     this.rdp = rdp;
+    this.debugEnabled = debugEnabled;
   }
 
   @Override
@@ -59,10 +63,16 @@ public class Monitor implements MonInterface {
     this.logger = logger;
   }
 
+  private void debugLog(String message) {
+    if (debugEnabled) {
+      System.out.println(ANSI_GRAY + message + ANSI_RESET);
+    }
+  }
+
   private void acquireMutex(int transition) {
     try {
       mutex.acquire();
-      System.out.println(
+      debugLog(
           "Hilo "
               + Thread.currentThread().getName()
               + " ha adquirido el mutex para T"
@@ -80,7 +90,7 @@ public class Monitor implements MonInterface {
   }
 
   private void handleImpossibleTransition(int transition) throws InterruptedException {
-    System.out.println(
+    debugLog(
         "Hilo "
             + Thread.currentThread().getName()
             + " no puede disparar T"
@@ -100,7 +110,7 @@ public class Monitor implements MonInterface {
       logger.logTransition(transition);
     }
 
-    System.out.println("Hilo " + Thread.currentThread().getName() + " ha disparado T" + transition);
+    debugLog("Hilo " + Thread.currentThread().getName() + " ha disparado T" + transition);
   }
 
   private boolean hasWaitingThreads() {
@@ -127,7 +137,6 @@ public class Monitor implements MonInterface {
 
     int nextTransition = policy.selectTransition(feasibleTransitions);
     queue.releaseTransition(nextTransition);
-    System.out.println(
-        "Hilo " + Thread.currentThread().getName() + " ha despertado T" + nextTransition);
+    debugLog("Hilo " + Thread.currentThread().getName() + " ha despertado T" + nextTransition);
   }
 }

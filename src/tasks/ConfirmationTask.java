@@ -3,6 +3,8 @@ package tasks;
 import util.Monitor;
 
 public class ConfirmationTask extends Thread {
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_YELLOW = "\u001B[33m";
 
   private int confirmations;
   private final boolean delayEnabled;
@@ -36,7 +38,8 @@ public class ConfirmationTask extends Thread {
         }
       }
       confirmations++; // Un ciclo de transiciones equivale a una confirmacion
-      System.out.println("Confirmacion realizada (total de confirmaciones: " + confirmations + ")");
+      System.out.println(
+          ANSI_YELLOW + "Confirmacion [" + confirmations + "] realizada" + ANSI_RESET);
     }
   }
 

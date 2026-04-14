@@ -20,9 +20,16 @@ public class Main {
     int totalClients = PetriNetConfig.INITIAL_TOKENS;
     boolean balancedPolicy = true;
     boolean delayEnabled = true;
+    boolean debugEnabled = false;
+
+    for (String arg : args) {
+      if ("--debug".equals(arg)) {
+        debugEnabled = true;
+      }
+    }
 
     PetriNet rdp = new PetriNet();
-    Monitor monitor = new Monitor(rdp);
+    Monitor monitor = new Monitor(rdp, debugEnabled);
     try {
       CL_Logger logger = new CL_Logger("logs");
       monitor.setLogger(logger);

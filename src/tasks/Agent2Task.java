@@ -3,6 +3,8 @@ package tasks;
 import util.Monitor;
 
 public class Agent2Task extends Thread {
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_YELLOW = "\u001B[33m";
 
   private int customersP7;
   private final boolean delayEnabled;
@@ -31,7 +33,8 @@ public class Agent2Task extends Thread {
         }
 
         customersP7++;
-        System.out.println("Agent2 atendió a un cliente (total atendidos: " + customersP7 + ")");
+        System.out.println(
+            ANSI_YELLOW + "Agent2 atiende a su cliente [" + customersP7 + "]" + ANSI_RESET);
       }
     }
   }

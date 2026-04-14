@@ -26,7 +26,6 @@ public class Served1Task extends Thread {
             break;
           }
         }
-        // System.out.println("Atendiendo a un cliente en Served1...");
       }
     }
   }

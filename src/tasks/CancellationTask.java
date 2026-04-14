@@ -3,6 +3,9 @@ package tasks;
 import util.Monitor;
 
 public class CancellationTask extends Thread {
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_YELLOW = "\u001B[33m";
+
   private int cancellations;
   private final boolean delayEnabled;
   private final Monitor monitor;
@@ -36,7 +39,8 @@ public class CancellationTask extends Thread {
         }
       }
       cancellations++; // Un ciclo de transiciones equivale a una cancelacion
-      System.out.println("Cancelacion realizada (total de cancelaciones: " + cancellations + ")");
+      System.out.println(
+          ANSI_YELLOW + "Cancelacion [" + cancellations + "] realizada" + ANSI_RESET);
     }
   }
 

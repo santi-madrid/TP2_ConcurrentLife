@@ -5,7 +5,6 @@ import java.util.concurrent.Semaphore;
 
 public class CL_Queue {
 
-  /* Constantes de clase */
   private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
 
   private final Semaphore[] waitingThreads;

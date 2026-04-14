@@ -3,6 +3,9 @@ package tasks;
 import util.Monitor;
 
 public class ExitTask extends Thread {
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_GREEN = "\u001B[32m";
+
   private int servedClients;
   private final boolean delayEnabled;
   private final int totalClients;
@@ -32,14 +35,9 @@ public class ExitTask extends Thread {
             break;
           }
         }
-        System.out.println(
-            "Salieron "
-                + servedClients
-                + " personas ("
-                + servedClients / (totalClients * 1.0) * 100
-                + "%)");
+        System.out.println("Salieron " + servedClients + " personas");
       }
     }
-    System.out.println("Todos los clientes han sido atendidos!");
+    System.out.println(ANSI_GREEN + "Todos los clientes han sido atendidos!" + ANSI_RESET);
   }
 }

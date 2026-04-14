@@ -3,6 +3,9 @@ package tasks;
 import util.Monitor;
 
 public class DoorTask extends Thread {
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_GREEN = "\u001B[32m";
+
   private int receivedClients;
   private final boolean delayEnabled;
   private final int totalClients;
@@ -26,12 +29,7 @@ public class DoorTask extends Thread {
         if (monitor.fireTransition(transition)) {
           if (transition == 0) {
             receivedClients++;
-            System.out.println(
-                "Entraron "
-                    + receivedClients
-                    + " personas ("
-                    + receivedClients / (totalClients * 1.0) * 100
-                    + "%)");
+            System.out.println("Entraron " + receivedClients + " personas");
           }
           if (delayEnabled) {
             try {
@@ -43,7 +41,7 @@ public class DoorTask extends Thread {
           }
         }
       }
-      System.out.println("Todos los clientes han ingresado!");
     }
+    System.out.println(ANSI_GREEN + "Todos los clientes han ingresado!" + ANSI_RESET);
   }
 }
