@@ -10,6 +10,7 @@ public class Monitor implements MonInterface {
   private final CL_Queue queue = new CL_Queue();
   private final PetriNet rdp;
   private CL_Policy policy;
+  private CL_Logger logger;
   private boolean retryFire;
 
   public Monitor(PetriNet rdp) {
@@ -54,6 +55,10 @@ public class Monitor implements MonInterface {
     return policy;
   }
 
+  public void setLogger(CL_Logger logger) {
+    this.logger = logger;
+  }
+
   private void acquireMutex(int transition) {
     try {
       mutex.acquire();
@@ -90,6 +95,11 @@ public class Monitor implements MonInterface {
     firingVector[transition] = 1;
 
     rdp.updatePN(firingVector);
+
+    if (logger != null) {
+      logger.logTransition(transition);
+    }
+
     System.out.println("Hilo " + Thread.currentThread().getName() + " ha disparado T" + transition);
   }
 

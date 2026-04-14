@@ -1,6 +1,7 @@
 import static java.lang.Thread.sleep;
 
 import config.PetriNetConfig;
+import java.io.IOException;
 import tasks.Agent1Task;
 import tasks.Agent2Task;
 import tasks.CancellationTask;
@@ -9,6 +10,7 @@ import tasks.DoorTask;
 import tasks.ExitTask;
 import tasks.Served1Task;
 import tasks.Served2Task;
+import util.CL_Logger;
 import util.CL_Policy;
 import util.Monitor;
 import util.PetriNet;
@@ -21,6 +23,13 @@ public class Main {
 
     PetriNet rdp = new PetriNet();
     Monitor monitor = new Monitor(rdp);
+    try {
+      CL_Logger logger = new CL_Logger("logs");
+      monitor.setLogger(logger);
+    } catch (IOException e) {
+      System.err.println("No se pudo inicializar el logger: " + e.getMessage());
+      System.exit(1);
+    }
 
     DoorTask door = new DoorTask(monitor, totalClients, delayEnabled);
     Agent1Task agent1 = new Agent1Task(monitor, delayEnabled);
