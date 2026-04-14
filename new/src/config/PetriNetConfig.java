@@ -7,4 +7,5 @@ public final class PetriNetConfig {
 
   public static final int PLACES = 15;
   public static final int TRANSITIONS = 12;
+  public static final int INITIAL_TOKENS = 186;
 }

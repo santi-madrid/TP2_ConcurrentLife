@@ -3,6 +3,7 @@ import static java.lang.Thread.sleep;
 import Monitor.Monitor;
 import PetriNet.PetriNet;
 import Policy.CL_Policy;
+import config.PetriNetConfig;
 import tasks.Agent1Task;
 import tasks.Agent2Task;
 import tasks.CancellationTask;
@@ -14,7 +15,7 @@ import tasks.Served2Task;
 
 public class Main {
   public static void main(String[] args) throws InterruptedException {
-    int totalClients = 186;
+    int totalClients = PetriNetConfig.INITIAL_TOKENS;
     boolean balancedPolicy = false;
 
     PetriNet rdp = new PetriNet();

@@ -1,10 +1,11 @@
 package Monitor;
 
+import java.util.concurrent.Semaphore;
+
 import PetriNet.PetriNet;
 import Policy.CL_Policy;
 import Queue.CL_Queue;
 import config.PetriNetConfig;
-import java.util.concurrent.Semaphore;
 
 public class Monitor implements MonInterface {
   private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
