@@ -94,8 +94,13 @@ public class PetriNet {
   }
 
   private boolean checkPlaceInvariants() {
-    int[] expectedSums = {5, 1, 5, 1, 1, 1};
+    int[] expectedSums = {1, 5, 1, 1, 1, 5};
     int[] actualSums = {
+      marking[1] + marking[2],
+      marking[2] + marking[3] + marking[4],
+      marking[5] + marking[6],
+      marking[7] + marking[8],
+      marking[10] + marking[11] + marking[12] + marking[13],
       marking[0]
           + marking[2]
           + marking[3]
@@ -105,12 +110,7 @@ public class PetriNet {
           + marking[11]
           + marking[12]
           + marking[13]
-          + marking[14],
-      marking[1] + marking[2],
-      marking[2] + marking[3] + marking[4],
-      marking[5] + marking[6],
-      marking[7] + marking[8],
-      marking[10] + marking[11] + marking[12] + marking[13]
+          + marking[14]
     };
 
     for (int i = 0; i < expectedSums.length; i++) {
