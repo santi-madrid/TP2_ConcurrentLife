@@ -1,10 +1,8 @@
 package PetriNet;
 
 import config.PetriNetConfig;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class PetriNet {
-  private final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
 
   /* Constantes de clase */
   private static final int PLACES = PetriNetConfig.PLACES;
@@ -44,10 +42,6 @@ public class PetriNet {
         };
 
     setEnabledTransitions(checkEnabledTransitions());
-  }
-
-  public LinkedBlockingQueue<Integer> getQueue() {
-    return queue;
   }
 
   public int[] getMarking() {
@@ -134,8 +128,6 @@ public class PetriNet {
     }
 
     enabledTransitions[transitionIndex] = 1;
-
-    // todo: TEMPORAL PETRI NET
   }
 
   public int[] checkEnabledTransitions() {
@@ -157,25 +149,6 @@ public class PetriNet {
     return calcEnTransitions;
   }
 
-  private int getFiredTransition(int[] firingVector) {
-    int firedTransition = -1;
-    int firedCount = 0;
-
-    for (int i = 0; i < TRANSITIONS; i++) {
-      if (firingVector[i] == 1) {
-        firedTransition = i;
-        firedCount++;
-      }
-    }
-
-    if (firedCount != 1) {
-      throw new IllegalArgumentException(
-          "The firing vector must contain exactly one active transition.");
-    }
-
-    return firedTransition;
-  }
-
   public void updatePN(int[] firingVector) {
 
     if (!isFirePossible(firingVector)) {
@@ -183,7 +156,6 @@ public class PetriNet {
     }
 
     setMarking(getNewMarking(firingVector));
-    queue.offer(getFiredTransition(firingVector));
 
     if (checkPlaceInvariants()) {
 
@@ -194,15 +166,5 @@ public class PetriNet {
     }
 
     setEnabledTransitions(checkEnabledTransitions());
-  }
-
-  // todo TEMPORAL PN METHODS
-
-  public boolean isInTimeWindow(int transitionIndex) {
-    return true; // Placeholder
-  }
-
-  public int getTimeWindow(int transitionIndex) {
-    return 0; // Placeholder
   }
 }
