@@ -16,7 +16,7 @@ import util.PetriNet;
 public class Main {
   public static void main(String[] args) throws InterruptedException {
     int totalClients = PetriNetConfig.INITIAL_TOKENS;
-    boolean balancedPolicy = false;
+    boolean balancedPolicy = true;
     boolean delayEnabled = true;
 
     PetriNet rdp = new PetriNet();
@@ -45,7 +45,8 @@ public class Main {
       exit.join();
       sleep(1000);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      Thread.currentThread().interrupt();
+      System.err.println("Ejecución interrumpida: " + e.getMessage());
     }
 
     System.out.println("=======================================================");

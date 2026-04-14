@@ -23,14 +23,15 @@ public class ConfirmationTask extends Thread {
     while (true) {
       for (int i = 0; i < transitionsToFire.length; i++) {
         if (monitor.fireTransition(transitionsToFire[i])) {
-          try {
-            if (delayEnabled) {
+          if (delayEnabled) {
+            try {
               int delay =
                   monitor.getPolicy().isBalanced() ? delaysBalanced[i] : delaysNonBalanced[i];
               Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              return;
             }
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
           }
         }
       }

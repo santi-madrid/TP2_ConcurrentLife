@@ -33,12 +33,13 @@ public class DoorTask extends Thread {
                     + receivedClients / (totalClients * 1.0) * 100
                     + "%)");
           }
-          try {
-            if (delayEnabled) {
+          if (delayEnabled) {
+            try {
               sleep(delays[transition]);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              return;
             }
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
           }
         }
       }

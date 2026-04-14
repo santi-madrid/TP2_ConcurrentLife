@@ -1,8 +1,7 @@
 package util;
 
-import java.util.concurrent.Semaphore;
-
 import config.PetriNetConfig;
+import java.util.concurrent.Semaphore;
 
 public class Monitor implements MonInterface {
   private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
@@ -35,7 +34,12 @@ public class Monitor implements MonInterface {
               false; // No hay hilos esperando, el hilo actual puede continuar sin liberar el mutex
         }
       } else {
-        handleImpossibleTransition(transition);
+        try {
+          handleImpossibleTransition(transition);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return false;
+        }
       }
     }
     mutex.release();
@@ -59,7 +63,7 @@ public class Monitor implements MonInterface {
               + " ha adquirido el mutex para T"
               + transition);
     } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -70,7 +74,7 @@ public class Monitor implements MonInterface {
     return rdp.isFirePossible(firingVector);
   }
 
-  private void handleImpossibleTransition(int transition) {
+  private void handleImpossibleTransition(int transition) throws InterruptedException {
     System.out.println(
         "Hilo "
             + Thread.currentThread().getName()

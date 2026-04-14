@@ -23,14 +23,15 @@ public class CancellationTask extends Thread {
     while (true) {
       for (int i = 0; i < transitionsToFire.length; i++) {
         if (monitor.fireTransition(transitionsToFire[i])) {
-          try {
-            if (delayEnabled) {
+          if (delayEnabled) {
+            try {
               isBalanced = monitor.getPolicy() != null && monitor.getPolicy().isBalanced();
               int delay = isBalanced ? delaysBalanced[i] : delaysNonBalanced[i];
               Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              return;
             }
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
           }
         }
       }

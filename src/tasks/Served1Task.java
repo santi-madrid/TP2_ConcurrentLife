@@ -18,12 +18,13 @@ public class Served1Task extends Thread {
   public void run() {
     while (true) {
       if (monitor.fireTransition(TRANSITION_P5)) {
-        try {
-          if (delayEnabled) {
+        if (delayEnabled) {
+          try {
             sleep(delay);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
           }
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
         }
         // System.out.println("Atendiendo a un cliente en Served1...");
       }

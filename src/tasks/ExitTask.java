@@ -24,12 +24,13 @@ public class ExitTask extends Thread {
     while (servedClients < totalClients) {
       if (monitor.fireTransition(TRANSITION_P14)) {
         servedClients++;
-        try {
-          if (delayEnabled) {
+        if (delayEnabled) {
+          try {
             sleep(delay);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
           }
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
         }
         System.out.println(
             "Salieron "

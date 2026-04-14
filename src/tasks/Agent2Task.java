@@ -21,12 +21,13 @@ public class Agent2Task extends Thread {
   public void run() {
     while (true) {
       if (monitor.fireTransition(TRANSITION_P7)) {
-        try {
-          if (delayEnabled) {
+        if (delayEnabled) {
+          try {
             sleep(delay);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
           }
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
         }
 
         customersP7++;

@@ -1,8 +1,7 @@
 package util;
 
-import java.util.concurrent.Semaphore;
-
 import config.PetriNetConfig;
+import java.util.concurrent.Semaphore;
 
 public class CL_Queue {
 
@@ -25,13 +24,9 @@ public class CL_Queue {
     return waitingTransitions;
   }
 
-  public void acquireTransition(int transition) {
+  public void acquireTransition(int transition) throws InterruptedException {
     waitingTransitions[transition] = 1;
-    try {
-      waitingThreads[transition].acquire();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    waitingThreads[transition].acquire();
   }
 
   public void releaseTransition(int transition) {
