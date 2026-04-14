@@ -3,13 +3,15 @@ package tasks;
 import util.Monitor;
 
 public class Served1Task extends Thread {
-  private static final int TRANSITION_P5 = 5;
+  private final boolean delayEnabled;
   private final Monitor monitor;
+  private static final int TRANSITION_P5 = 5;
   private static final int delay = 100;
 
-  public Served1Task(Monitor monitor) {
+  public Served1Task(Monitor monitor, boolean delayEnabled) {
     this.setName("Served1");
     this.monitor = monitor;
+    this.delayEnabled = delayEnabled;
   }
 
   @Override
@@ -17,7 +19,9 @@ public class Served1Task extends Thread {
     while (true) {
       if (monitor.fireTransition(TRANSITION_P5)) {
         try {
-          sleep(delay);
+          if (delayEnabled) {
+            sleep(delay);
+          }
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }

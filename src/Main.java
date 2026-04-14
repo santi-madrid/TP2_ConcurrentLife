@@ -17,18 +17,19 @@ public class Main {
   public static void main(String[] args) throws InterruptedException {
     int totalClients = PetriNetConfig.INITIAL_TOKENS;
     boolean balancedPolicy = false;
+    boolean delayEnabled = true;
 
     PetriNet rdp = new PetriNet();
     Monitor monitor = new Monitor(rdp);
 
-    DoorTask door = new DoorTask(monitor, totalClients);
-    Agent1Task agent1 = new Agent1Task(monitor);
-    Agent2Task agent2 = new Agent2Task(monitor);
-    Served1Task served1 = new Served1Task(monitor);
-    Served2Task served2 = new Served2Task(monitor);
-    ConfirmationTask confirmation = new ConfirmationTask(monitor);
-    CancellationTask cancellation = new CancellationTask(monitor);
-    ExitTask exit = new ExitTask(monitor, totalClients);
+    DoorTask door = new DoorTask(monitor, totalClients, delayEnabled);
+    Agent1Task agent1 = new Agent1Task(monitor, delayEnabled);
+    Agent2Task agent2 = new Agent2Task(monitor, delayEnabled);
+    Served1Task served1 = new Served1Task(monitor, delayEnabled);
+    Served2Task served2 = new Served2Task(monitor, delayEnabled);
+    ConfirmationTask confirmation = new ConfirmationTask(monitor, delayEnabled);
+    CancellationTask cancellation = new CancellationTask(monitor, delayEnabled);
+    ExitTask exit = new ExitTask(monitor, totalClients, delayEnabled);
 
     CL_Policy policy = new CL_Policy(balancedPolicy, agent1, agent2, confirmation, cancellation);
     monitor.setPolicy(policy);

@@ -3,15 +3,17 @@ package tasks;
 import util.Monitor;
 
 public class ExitTask extends Thread {
-  private static final int TRANSITION_P14 = 11;
+  private int servedClients;
+  private final boolean delayEnabled;
   private final int totalClients;
   private final Monitor monitor;
-  private int servedClients;
+  private static final int TRANSITION_P14 = 11;
   private static final int delay = 0;
 
-  public ExitTask(Monitor monitor, int totalClients) {
+  public ExitTask(Monitor monitor, int totalClients, boolean delayEnabled) {
     this.setName("Exit");
     this.monitor = monitor;
+    this.delayEnabled = delayEnabled;
 
     this.servedClients = 0;
     this.totalClients = totalClients;
@@ -23,7 +25,9 @@ public class ExitTask extends Thread {
       if (monitor.fireTransition(TRANSITION_P14)) {
         servedClients++;
         try {
-          sleep(delay);
+          if (delayEnabled) {
+            sleep(delay);
+          }
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }

@@ -3,15 +3,17 @@ package tasks;
 import util.Monitor;
 
 public class DoorTask extends Thread {
-  private final int[] transitionsToFire = {0, 1};
-  private final int[] delays = {0, 100};
+  private int receivedClients;
+  private final boolean delayEnabled;
   private final int totalClients;
   private final Monitor monitor;
-  private int receivedClients;
+  private final int[] transitionsToFire = {0, 1};
+  private final int[] delays = {0, 100};
 
-  public DoorTask(Monitor monitor, int totalClients) {
+  public DoorTask(Monitor monitor, int totalClients, boolean delayEnabled) {
     this.setName("Door");
     this.monitor = monitor;
+    this.delayEnabled = delayEnabled;
 
     this.receivedClients = 0;
     this.totalClients = totalClients;
@@ -32,7 +34,9 @@ public class DoorTask extends Thread {
                     + "%)");
           }
           try {
-            sleep(delays[transition]);
+            if (delayEnabled) {
+              sleep(delays[transition]);
+            }
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }

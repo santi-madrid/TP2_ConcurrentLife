@@ -5,14 +5,16 @@ import util.Monitor;
 public class Agent2Task extends Thread {
 
   private int customersP7;
+  private final boolean delayEnabled;
   private final Monitor monitor;
   private static final int TRANSITION_P7 = 3;
   private static final int delay = 0;
 
-  public Agent2Task(Monitor monitor) {
+  public Agent2Task(Monitor monitor, boolean delayEnabled) {
     this.setName("Agent2");
     this.monitor = monitor;
     this.customersP7 = 0;
+    this.delayEnabled = delayEnabled;
   }
 
   @Override
@@ -20,7 +22,9 @@ public class Agent2Task extends Thread {
     while (true) {
       if (monitor.fireTransition(TRANSITION_P7)) {
         try {
-          sleep(delay);
+          if (delayEnabled) {
+            sleep(delay);
+          }
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }
