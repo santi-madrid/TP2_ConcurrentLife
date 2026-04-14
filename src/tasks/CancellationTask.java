@@ -1,6 +1,6 @@
 package tasks;
 
-import Monitor.Monitor;
+import util.Monitor;
 
 public class CancellationTask extends Thread {
   private int cancellations;

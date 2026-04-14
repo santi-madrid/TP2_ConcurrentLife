@@ -1,4 +1,4 @@
-package PetriNet;
+package util;
 
 import config.PetriNetConfig;
 

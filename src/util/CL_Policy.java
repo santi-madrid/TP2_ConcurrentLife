@@ -1,6 +1,7 @@
-package Policy;
+package util;
 
 import java.util.concurrent.ThreadLocalRandom;
+
 import tasks.Agent1Task;
 import tasks.Agent2Task;
 import tasks.CancellationTask;

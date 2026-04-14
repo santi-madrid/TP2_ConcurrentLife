@@ -1,6 +1,6 @@
 package tasks;
 
-import Monitor.Monitor;
+import util.Monitor;
 
 public class ExitTask extends Thread {
   private static final int TRANSITION_P14 = 11;

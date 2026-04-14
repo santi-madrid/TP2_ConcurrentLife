@@ -1,6 +1,6 @@
 package tasks;
 
-import Monitor.Monitor;
+import util.Monitor;
 
 public class Served2Task extends Thread {
   private static final int TRANSITION_P8 = 4;

@@ -1,6 +1,6 @@
 package tasks;
 
-import Monitor.Monitor;
+import util.Monitor;
 
 public class Agent1Task extends Thread {
 

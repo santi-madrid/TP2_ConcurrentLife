@@ -1,8 +1,5 @@
 import static java.lang.Thread.sleep;
 
-import Monitor.Monitor;
-import PetriNet.PetriNet;
-import Policy.CL_Policy;
 import config.PetriNetConfig;
 import tasks.Agent1Task;
 import tasks.Agent2Task;
@@ -12,6 +9,9 @@ import tasks.DoorTask;
 import tasks.ExitTask;
 import tasks.Served1Task;
 import tasks.Served2Task;
+import util.CL_Policy;
+import util.Monitor;
+import util.PetriNet;
 
 public class Main {
   public static void main(String[] args) throws InterruptedException {

@@ -1,7 +1,8 @@
-package Queue;
+package util;
+
+import java.util.concurrent.Semaphore;
 
 import config.PetriNetConfig;
-import java.util.concurrent.Semaphore;
 
 public class CL_Queue {
 

@@ -1,10 +1,7 @@
-package Monitor;
+package util;
 
 import java.util.concurrent.Semaphore;
 
-import PetriNet.PetriNet;
-import Policy.CL_Policy;
-import Queue.CL_Queue;
 import config.PetriNetConfig;
 
 public class Monitor implements MonInterface {
