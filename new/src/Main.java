@@ -14,7 +14,7 @@ import tasks.Served2Task;
 
 public class Main {
   public static void main(String[] args) throws InterruptedException {
-    int totalClients = 100;
+    int totalClients = 186;
     boolean balancedPolicy = false;
 
     PetriNet rdp = new PetriNet();
@@ -46,30 +46,36 @@ public class Main {
       e.printStackTrace();
     }
 
-    System.out.println("===================================================");
+    System.out.println("=======================================================");
+    final String statsFormat = "%-40s %4d (%6.2f%%)%n";
+
     System.out.printf(
-        "Clientes atendidos por el agente en P6: \t%d (%.2f%%)\n",
+        statsFormat,
+        "Clientes atendidos por el agente en P6:",
         agent1.getCustomersP6(),
         (agent1.getCustomersP6() * 100.0) / (agent1.getCustomersP6() + agent2.getCustomersP7()));
 
     System.out.printf(
-        "Clientes atendidos por el agente en P7: \t%d (%.2f%%)\n",
+        statsFormat,
+        "Clientes atendidos por el agente en P7:",
         agent2.getCustomersP7(),
         (agent2.getCustomersP7() * 100.0) / (agent1.getCustomersP6() + agent2.getCustomersP7()));
 
     System.out.printf(
-        "Reservas totales confirmadas:\t%d (%.2f%%)\n",
+        statsFormat,
+        "Reservas confirmadas:",
         confirmation.getConfirmations(),
         (confirmation.getConfirmations() * 100.0)
             / (confirmation.getConfirmations() + cancellation.getCancellations()));
 
     System.out.printf(
-        "Reservas totales canceladas:\t%d (%.2f%%)\n",
+        statsFormat,
+        "Reservas canceladas:",
         cancellation.getCancellations(),
         (cancellation.getCancellations() * 100.0)
             / (confirmation.getConfirmations() + cancellation.getCancellations()));
     System.out.print(
-        "===================================================\nTIEMPO TOTAL DE EJECUCIÓN: ");
+        "=======================================================\nTIEMPO TOTAL DE EJECUCIÓN: ");
     System.out.println(System.currentTimeMillis() - startTime + " ms\n");
 
     System.exit(0);
