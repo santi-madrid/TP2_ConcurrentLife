@@ -8,7 +8,7 @@ public class ExitTask extends Thread {
   private final int totalClients;
   private final Monitor monitor;
   private static final int TRANSITION_P14 = 11;
-  private static final int delay = 0;
+  private static final int DELAY = 0;
 
   public ExitTask(Monitor monitor, int totalClients, boolean delayEnabled) {
     this.setName("Exit");
@@ -26,7 +26,7 @@ public class ExitTask extends Thread {
         servedClients++;
         if (delayEnabled) {
           try {
-            sleep(delay);
+            sleep(DELAY);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;

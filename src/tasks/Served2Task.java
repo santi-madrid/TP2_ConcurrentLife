@@ -6,7 +6,7 @@ public class Served2Task extends Thread {
   private final boolean delayEnabled;
   private final Monitor monitor;
   private static final int TRANSITION_P8 = 4;
-  private static final int delay = 100;
+  private static final int DELAY = 100;
 
   public Served2Task(Monitor monitor, boolean delayEnabled) {
     this.setName("Served2");
@@ -20,7 +20,7 @@ public class Served2Task extends Thread {
       if (monitor.fireTransition(TRANSITION_P8)) {
         if (delayEnabled) {
           try {
-            sleep(delay);
+            sleep(DELAY);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;

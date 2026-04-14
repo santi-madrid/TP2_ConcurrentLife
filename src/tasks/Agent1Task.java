@@ -8,7 +8,7 @@ public class Agent1Task extends Thread {
   private final boolean delayEnabled;
   private final Monitor monitor;
   private static final int TRANSITION_P6 = 2;
-  private static final int delay = 0;
+  private static final int DELAY = 0;
 
   public Agent1Task(Monitor monitor, boolean delayEnabled) {
     this.setName("Agent1");
@@ -23,7 +23,7 @@ public class Agent1Task extends Thread {
       if (monitor.fireTransition(TRANSITION_P6)) {
         if (delayEnabled) {
           try {
-            sleep(delay);
+            sleep(DELAY);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;
