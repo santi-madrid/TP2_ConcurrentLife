@@ -12,6 +12,11 @@ public class CancellationTask extends Thread {
   private final int[] transitionsToFire = {7, 8};
   private final int[] delaysNonBalanced = {0, 100};
   private final int[] delaysBalanced = {0, 50};
+
+  public int getDelayT8() {
+    return delaysBalanced[1];
+  }
+
   private boolean isBalanced;
 
   public CancellationTask(Monitor monitor, boolean delayEnabled) {

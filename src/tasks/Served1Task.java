@@ -14,6 +14,10 @@ public class Served1Task extends Thread {
     this.delayEnabled = delayEnabled;
   }
 
+  public static int getDelayT5() {
+    return DELAY;
+  }
+
   @Override
   public void run() {
     while (true) {

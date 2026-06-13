@@ -83,6 +83,14 @@ public class Main {
     System.out.printf("delayEnabled   = %b%n", delayEnabled);
     System.out.printf("balancedPolicy = %b%n", balancedPolicy);
     System.out.printf("debugEnabled   = %b%n", debugEnabled);
+    if (delayEnabled) {
+      System.out.printf("\n%-40s %4d ms%n", "T1  (entrada recepcion):", door.getDelayT1());
+      System.out.printf("%-40s %4d ms%n", "T4  (vendedor 2):", Served2Task.getDelayT4());
+      System.out.printf("%-40s %4d ms%n", "T5  (vendedor 1):", Served1Task.getDelayT5());
+      System.out.printf("%-40s %4d ms%n", "T8  (cancelacion):", cancellation.getDelayT8());
+      System.out.printf("%-40s %4d ms%n", "T9  (confirmacion):", confirmation.getDelayT9());
+      System.out.printf("%-40s %4d ms%n", "T10 (pago):", confirmation.getDelayT10());
+    }
     System.out.println(resLine);
 
     final String statsFormat = "%-40s %4d (%6.2f%%)%n";
