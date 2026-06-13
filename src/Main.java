@@ -65,7 +65,26 @@ public class Main {
       System.err.println("Ejecución interrumpida: " + e.getMessage());
     }
 
-    System.out.println("=======================================================");
+    final String cfgTitle = " CONFIGURACION ";
+    final String resTitle = " RESULTADOS ";
+    int width = Math.max(cfgTitle.length(), resTitle.length()) + 40;
+    String line = "=".repeat(width);
+    String cfgLine =
+        "=".repeat((width - cfgTitle.length()) / 2)
+            + cfgTitle
+            + "=".repeat(width - cfgTitle.length() - (width - cfgTitle.length()) / 2);
+    String resLine =
+        "=".repeat((width - resTitle.length()) / 2)
+            + resTitle
+            + "=".repeat(width - resTitle.length() - (width - resTitle.length()) / 2);
+
+    System.out.println(cfgLine);
+    System.out.printf("INITIAL_TOKENS = %d%n", totalClients);
+    System.out.printf("delayEnabled   = %b%n", delayEnabled);
+    System.out.printf("balancedPolicy = %b%n", balancedPolicy);
+    System.out.printf("debugEnabled   = %b%n", debugEnabled);
+    System.out.println(resLine);
+
     final String statsFormat = "%-40s %4d (%6.2f%%)%n";
 
     System.out.printf(
@@ -93,9 +112,9 @@ public class Main {
         cancellation.getCancellations(),
         (cancellation.getCancellations() * 100.0)
             / (confirmation.getConfirmations() + cancellation.getCancellations()));
-    System.out.print(
-        "=======================================================\nTIEMPO TOTAL DE EJECUCIÓN: ");
-    System.out.println(System.currentTimeMillis() - startTime + " ms\n");
+    System.out.printf(
+        "\nTIEMPO TOTAL DE EJECUCIÓN: %d ms%n", System.currentTimeMillis() - startTime);
+    System.out.println(line);
 
     System.exit(0);
   }

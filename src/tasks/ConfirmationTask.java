@@ -4,14 +4,14 @@ import util.Monitor;
 
 public class ConfirmationTask extends Thread {
   private static final String ANSI_RESET = "\u001B[0m";
-  private static final String ANSI_YELLOW = "\u001B[33m";
+  private static final String ANSI_GREEN = "\u001B[32m";
 
   private int confirmations;
   private final boolean delayEnabled;
   private final Monitor monitor;
   private final int[] transitionsToFire = {6, 9, 10};
-  private final int[] delaysNonBalanced = {0, 54, 44};
-  private final int[] delaysBalanced = {0, 100, 100};
+  private final int[] delaysNonBalanced = {0, 30, 20};
+  private final int[] delaysBalanced = {0, 50, 50};
 
   public ConfirmationTask(Monitor monitor, boolean delayEnabled) {
     this.setName("Confirmation");
@@ -39,7 +39,7 @@ public class ConfirmationTask extends Thread {
       }
       confirmations++; // Un ciclo de transiciones equivale a una confirmacion
       System.out.println(
-          ANSI_YELLOW + "Confirmacion [" + confirmations + "] realizada" + ANSI_RESET);
+          ANSI_GREEN + "Confirmacion [" + confirmations + "] realizada" + ANSI_RESET);
     }
   }
 

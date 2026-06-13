@@ -11,7 +11,7 @@ public class DoorTask extends Thread {
   private final int totalClients;
   private final Monitor monitor;
   private final int[] transitionsToFire = {0, 1};
-  private final int[] delays = {0, 100};
+  private final int[] delays = {0, 60};
 
   public DoorTask(Monitor monitor, int totalClients, boolean delayEnabled) {
     this.setName("Door");
