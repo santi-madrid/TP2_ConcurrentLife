@@ -28,7 +28,7 @@ public class Main {
       }
     }
 
-    PetriNet rdp = new PetriNet();
+    PetriNet rdp = new PetriNet(debugEnabled);
     Monitor monitor = new Monitor(rdp, debugEnabled);
     try {
       CL_Logger logger = new CL_Logger("logs");
@@ -78,18 +78,26 @@ public class Main {
             + resTitle
             + "=".repeat(width - resTitle.length() - (width - resTitle.length()) / 2);
 
+    String ANSI_RESET = "[0m";
+    String ANSI_GREEN = "[32m";
+    String ANSI_RED = "[31m";
+    String balancedColor = balancedPolicy ? ANSI_GREEN : ANSI_RED;
+
     System.out.println(cfgLine);
     System.out.printf("INITIAL_TOKENS = %d%n", totalClients);
     System.out.printf("delayEnabled   = %b%n", delayEnabled);
-    System.out.printf("balancedPolicy = %b%n", balancedPolicy);
+    System.out.printf("balancedPolicy = %s%s%s%n", balancedColor, balancedPolicy, ANSI_RESET);
     System.out.printf("debugEnabled   = %b%n", debugEnabled);
     if (delayEnabled) {
-      System.out.printf("\n%-40s %4d ms%n", "T1  (entrada recepcion):", door.getDelayT1());
-      System.out.printf("%-40s %4d ms%n", "T4  (vendedor 2):", Served2Task.getDelayT4());
-      System.out.printf("%-40s %4d ms%n", "T5  (vendedor 1):", Served1Task.getDelayT5());
-      System.out.printf("%-40s %4d ms%n", "T8  (cancelacion):", cancellation.getDelayT8());
-      System.out.printf("%-40s %4d ms%n", "T9  (confirmacion):", confirmation.getDelayT9());
-      System.out.printf("%-40s %4d ms%n", "T10 (pago):", confirmation.getDelayT10());
+      System.out.printf("T1  (entrada recepcion)   = %4d ms%n", door.getDelayT1());
+      System.out.printf("T4  (vendedor 2)          = %4d ms%n", Served2Task.getDelayT4());
+      System.out.printf("T5  (vendedor 1)          = %4d ms%n", Served1Task.getDelayT5());
+      System.out.printf(
+          "T8  (cancelacion)         = %4d ms%n", cancellation.getDelayT8(balancedPolicy));
+      System.out.printf(
+          "T9  (confirmacion)        = %4d ms%n", confirmation.getDelayT9(balancedPolicy));
+      System.out.printf(
+          "T10 (pago)                = %4d ms%n", confirmation.getDelayT10(balancedPolicy));
     }
     System.out.println(resLine);
 

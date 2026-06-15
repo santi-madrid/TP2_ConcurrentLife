@@ -13,12 +13,12 @@ public class ConfirmationTask extends Thread {
   private final int[] delaysNonBalanced = {0, 30, 20};
   private final int[] delaysBalanced = {0, 50, 50};
 
-  public int getDelayT9() {
-    return delaysBalanced[1];
+  public int getDelayT9(boolean balanced) {
+    return balanced ? delaysBalanced[1] : delaysNonBalanced[1];
   }
 
-  public int getDelayT10() {
-    return delaysBalanced[2];
+  public int getDelayT10(boolean balanced) {
+    return balanced ? delaysBalanced[2] : delaysNonBalanced[2];
   }
 
   public ConfirmationTask(Monitor monitor, boolean delayEnabled) {
