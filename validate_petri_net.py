@@ -80,10 +80,7 @@ class PetriNetValidator:
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
 
-        # Formato estándar
-        formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-        )
+        formatter = logging.Formatter("%(message)s")
 
         # Handler para consola
         console_handler = logging.StreamHandler()

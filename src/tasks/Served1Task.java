@@ -6,12 +6,16 @@ public class Served1Task extends Thread {
   private final boolean delayEnabled;
   private final Monitor monitor;
   private static final int TRANSITION_P5 = 5;
-  private static final int DELAY = 100;
+  private static final int DELAY = 50;
 
   public Served1Task(Monitor monitor, boolean delayEnabled) {
     this.setName("Served1");
     this.monitor = monitor;
     this.delayEnabled = delayEnabled;
+  }
+
+  public static int getDelayT5() {
+    return DELAY;
   }
 
   @Override

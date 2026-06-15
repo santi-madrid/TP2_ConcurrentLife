@@ -7,18 +7,22 @@ public class PetriNet {
   /* Constantes de clase */
   private static final int PLACES = PetriNetConfig.PLACES;
   private static final int TRANSITIONS = PetriNetConfig.TRANSITIONS;
+  private static final String ANSI_RESET = "\u001B[0m";
+  private static final String ANSI_GRAY = "\u001B[90m";
 
   // Variables de instancia
   private int[] marking;
   private int[] enabledTransitions;
   private int lastFiredTransition;
+  private final boolean debugEnabled;
 
   // Matriz de incidencia:
   // filas representan plazas (15)
   // columnas representan transiciones (12)
   private final int[][] incidenceMatrix;
 
-  public PetriNet() {
+  public PetriNet(boolean debugEnabled) {
+    this.debugEnabled = debugEnabled;
     // marking.length == PLACES
     marking = new int[] {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
     enabledTransitions = new int[TRANSITIONS];
@@ -155,10 +159,27 @@ public class PetriNet {
       throw new IllegalStateException("The transition cannot be fired due to insufficient tokens.");
     }
 
+    int firedTransition = -1;
+    for (int i = 0; i < TRANSITIONS; i++) {
+      if (firingVector[i] == 1) {
+        firedTransition = i;
+        break;
+      }
+    }
+
     setMarking(getNewMarking(firingVector));
+    lastFiredTransition = firedTransition;
 
     if (checkPlaceInvariants()) {
-
+      if (debugEnabled) {
+        System.out.println(
+            ANSI_GRAY
+                + "Invariantes de plazas respetados al disparar T"
+                + firedTransition
+                + ". Marking: "
+                + java.util.Arrays.toString(marking)
+                + ANSI_RESET);
+      }
     } else {
       throw new IllegalStateException(
           "The place invariants have been violated. Current marking: "

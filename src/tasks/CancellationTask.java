@@ -4,14 +4,19 @@ import util.Monitor;
 
 public class CancellationTask extends Thread {
   private static final String ANSI_RESET = "\u001B[0m";
-  private static final String ANSI_YELLOW = "\u001B[33m";
+  private static final String ANSI_RED = "\u001B[31m";
 
   private int cancellations;
   private final boolean delayEnabled;
   private final Monitor monitor;
   private final int[] transitionsToFire = {7, 8};
-  private final int[] delaysNonBalanced = {0, 277};
-  private final int[] delaysBalanced = {0, 100};
+  private final int[] delaysNonBalanced = {0, 100};
+  private final int[] delaysBalanced = {0, 50};
+
+  public int getDelayT8(boolean balanced) {
+    return balanced ? delaysBalanced[1] : delaysNonBalanced[1];
+  }
+
   private boolean isBalanced;
 
   public CancellationTask(Monitor monitor, boolean delayEnabled) {
@@ -39,8 +44,7 @@ public class CancellationTask extends Thread {
         }
       }
       cancellations++; // Un ciclo de transiciones equivale a una cancelacion
-      System.out.println(
-          ANSI_YELLOW + "Cancelacion [" + cancellations + "] realizada" + ANSI_RESET);
+      System.out.println(ANSI_RED + "Cancelacion [" + cancellations + "] realizada" + ANSI_RESET);
     }
   }
 
