@@ -12,12 +12,11 @@ public class CancellationTask extends Thread {
   private final int[] transitionsToFire = {7, 8};
   private final int[] delaysNonBalanced = {0, 100};
   private final int[] delaysBalanced = {0, 50};
+  private boolean isBalanced;
 
   public int getDelayT8(boolean balanced) {
     return balanced ? delaysBalanced[1] : delaysNonBalanced[1];
   }
-
-  private boolean isBalanced;
 
   public CancellationTask(Monitor monitor, boolean delayEnabled) {
     this.setName("Cancellation");
@@ -33,8 +32,8 @@ public class CancellationTask extends Thread {
         if (monitor.fireTransition(transitionsToFire[i])) {
           if (delayEnabled) {
             try {
-              isBalanced = monitor.getPolicy() != null && monitor.getPolicy().isBalanced();
-              int delay = isBalanced ? delaysBalanced[i] : delaysNonBalanced[i];
+              int delay =
+                  monitor.getPolicy().isBalanced() ? delaysBalanced[i] : delaysNonBalanced[i];
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();

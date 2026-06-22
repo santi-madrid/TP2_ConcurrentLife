@@ -35,8 +35,8 @@ public class Monitor implements MonInterface {
           wakeUpWaitingThreads();
           return true;
         } else {
-          retryFire =
-              false; // No hay hilos esperando, el hilo actual puede continuar sin liberar el mutex
+          retryFire = false; // No hay hilos esperando: no se hace handoff.
+          //  El hilo sale del bucle y libera el mutex normalmente (línea 51).
         }
       } else {
         try {

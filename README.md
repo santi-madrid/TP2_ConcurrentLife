@@ -11,11 +11,31 @@ Repositorio del Trabajo Práctico N° 2 de **Programación Concurrente** (FCEFyN
 
 ---
 
+## Autores
+
+- **BERNARDI, Mateo**
+- **LEDESMA, Ignacio**
+- **MADRID, Santiago**
+
+**Cátedra:** Programación Concurrente - Año 2024  
+**Profesores:** Ventre, Luis Orlando · Ludemann, Mauricio
+
+---
+
 ## Tabla de contenidos
 
 - [TP2 - Concurrent Life](#tp2---concurrent-life)
+  - [Autores](#autores)
   - [Tabla de contenidos](#tabla-de-contenidos)
   - [Descripción](#descripción)
+  - [Resumen del proyecto](#resumen-del-proyecto)
+    - [Modelado](#modelado)
+    - [Concurrencia](#concurrencia)
+      - [Política de señalización](#política-de-señalización)
+      - [Política de resolución de conflictos](#política-de-resolución-de-conflictos)
+    - [Persistencia](#persistencia)
+    - [Validación](#validación)
+    - [Para más detalle](#para-más-detalle)
   - [Requisitos](#requisitos)
   - [Compilación y ejecución](#compilación-y-ejecución)
     - [Compilar](#compilar)
@@ -31,15 +51,6 @@ Repositorio del Trabajo Práctico N° 2 de **Programación Concurrente** (FCEFyN
     - [Ejecución](#ejecución)
     - [Variantes de invariantes reconocidas](#variantes-de-invariantes-reconocidas)
   - [Resultados de las corridas](#resultados-de-las-corridas)
-  - [Resumen del proyecto](#resumen-del-proyecto)
-    - [Modelado](#modelado)
-    - [Concurrencia](#concurrencia)
-    - [Sincronización](#sincronización)
-    - [Política de resolución de conflictos](#política-de-resolución-de-conflictos)
-    - [Persistencia](#persistencia)
-    - [Validación](#validación)
-    - [Para más detalle](#para-más-detalle)
-  - [Autores](#autores)
 
 ---
 
@@ -47,14 +58,87 @@ Repositorio del Trabajo Práctico N° 2 de **Programación Concurrente** (FCEFyN
 
 Se simula el funcionamiento de una agencia de viajes donde:
 
-1. Clientes ingresan al local por una puerta (`Door`).
-2. Son atendidos por uno de dos agentes vendedores (`Agent1` / `Agent2`), cada uno con su cola.
+1. Clientes ingresan al local por una puerta.
+2. Son atendidos por uno de dos agentes vendedores.
 3. Tras la atención, el cliente pasa por una etapa de **confirmación** o **cancelación** de la reserva.
-4. Finalmente sale del local (`Exit`).
+4. Finalmente sale del local.
 
-El flujo se modela como una **Red de Petri** y se implementa con **hilos Java concurrentes** que disputan el disparo de transiciones. Un `Monitor` central arbitra el acceso a la RdP, garantizando exclusión mutua y resolviendo conflictos mediante una política configurable (balanceada o no balanceada).
+El flujo se modela como una **Red de Petri** y se implementa con **hilos Java concurrentes** que disputan el disparo de transiciones. Un `Monitor` central arbitra garantizando exclusión mutua y resolviendo conflictos mediante una política configurable (balanceada o no balanceada).
 
 Para más detalle teórico, experimental y de conclusiones, ver el [Informe TP2 - Concurrent Life](docs/Informe%20TP2%20-%20Concurrent%20Life.pdf).
+
+---
+
+## Resumen del proyecto
+
+### Modelado
+
+El sistema se modela como una Red de Petri de **15 plazas** y **12 transiciones**, con marcado inicial `{5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0}`. La estructura completa, junto con la asignación de plazas a hilos, se muestra en [`docs/PetriNet_tasks.png`](docs/PetriNet_tasks.png).
+
+### Concurrencia
+
+En total hay **8 hilos** (ver [`src/tasks/`](src/tasks/)) y [`src/util/Monitor.java`](src/util/Monitor.java) centraliza el disparo de transiciones: 
+
+- Usa un `Semaphore` como mutex para garantizar exclusión mutua sobre la RdP.
+- Usa una [`CL_Queue`](src/util/CL_Queue.java) de semáforos para bloquear a los hilos cuya transición no está habilitada.
+- Al disparar una transición, despierta al siguiente hilo bloqueado cuya transición esté habilitada, seleccionándolo mediante una [`CL_Policy`](src/util/CL_Policy.java).
+
+#### Política de señalización
+
+[`src/util/Monitor.java`](src/util/Monitor.java) implementa una política de señalización basada en **handoff** o **pasaje directo de ejecución** entre hilos bloqueados por transición. Respecto de las políticas vistas en clase, se parece principalmente a una variante de **Signal and Exit (SX)**: el hilo que señaliza despierta a otro y sale del monitor. La diferencia importante es que no libera explícitamente el mutex cuando hay un hilo despertado; el mutex queda reservado para el hilo señalizado.
+
+- **Mutex del monitor**: un `Semaphore(1, true)` en [`Monitor.java`](src/util/Monitor.java) garantiza exclusión mutua sobre la Red de Petri. Todo hilo que invoca `fireTransition(T)` intenta tomar este mutex al entrar al monitor.
+- **Cola por transición**: cuando una transición no está habilitada, el hilo libera el mutex y se bloquea en un semáforo específico de esa transición dentro de [`CL_Queue.java`](src/util/CL_Queue.java). Estos semáforos se inicializan con 0 permisos y funcionan como mecanismo de señalización, no como mutex.
+- **Bloqueo del hilo**: al no poder disparar, el hilo marca su transición como pendiente y se suspende:
+
+  ```java
+  waitingTransitions[transition] = 1;
+  waitingThreads[transition].acquire();
+  ```
+
+  El `acquire()` no consume CPU mientras espera. El hilo queda bloqueado hasta que otro hilo dispare una transición que cambie el marcado de la RdP y lo despierte.
+
+- **Signal / despertar**: después de disparar una transición y actualizar la RdP, el monitor consulta qué transiciones están habilitadas y cuáles tienen hilos esperando. Si existe al menos una transición habilitada y esperando, se elige una mediante [`CL_Policy.java`](src/util/CL_Policy.java) y se despierta un único hilo:
+
+  ```java
+  queue.releaseTransition(nextTransition);
+  return true;
+  ```
+
+- **Handoff del mutex**: cuando despierta a otro hilo, el hilo señalizador retorna inmediatamente sin ejecutar `mutex.release()`. El hilo despertado continúa desde `queue.acquireTransition()` y reintenta el `while` con `retryFire == true`, sin volver a adquirir formalmente el mutex. El diseño asume que el mutex quedó reservado por protocolo para ese hilo despertado.
+- **Caso sin hilos esperando habilitados**: si no hay ningún hilo esperando por una transición actualmente habilitada, el hilo actual pone `retryFire = false`, sale del `while`, libera el mutex con `mutex.release()` y retorna normalmente.
+
+**Comparación con las políticas clásicas:**
+
+| Política | Comportamiento clásico | Relación con esta implementación |
+|---|---|---|
+| **SC** (Signal and Continue) | El señalizador despierta a otro hilo pero sigue ejecutando dentro del monitor. El despertado debe competir por entrar. | No aplica directamente: el señalizador no sigue ejecutando dentro del monitor cuando despierta a alguien, y el despertado no compite por la entrada. |
+| **SW** (Signal and Wait) | El señalizador se bloquea y cede el monitor al despertado. | No aplica: el señalizador no se bloquea. |
+| **SU** (Signal and Urgent Wait) | El señalizador pasa a una cola urgente o de cortesía. | No aplica: no existe cola urgente ni cola de cortesía. |
+| **SX** (Signal and Exit) | El señalizador despierta a otro hilo y sale del monitor. | Es la política clásica más cercana: el señalizador despierta y retorna. La diferencia es que no libera explícitamente el mutex; se usa un handoff manual hacia el hilo despertado. |
+
+**Prioridad efectiva**: cuando hay handoff, el hilo despertado tiene prioridad práctica sobre los hilos que esperan entrar por el mutex, porque el señalizador no libera el mutex al público. Los hilos externos recién pueden avanzar cuando no hay ningún hilo habilitado esperando y algún hilo ejecuta `mutex.release()`.
+
+**Revalidación de la condición**: el hilo despertado no asume que ya puede disparar definitivamente. Al retomar, vuelve al `while (retryFire)` y consulta nuevamente si su transición puede dispararse con el marcado actual.
+
+#### Política de resolución de conflictos
+
+[`src/util/CL_Policy.java`](src/util/CL_Policy.java) decide qué transición habilitar cuando hay múltiples opciones viables. Tiene dos modos:
+
+- **Balanced**: reparte la carga 50/50 entre agentes (P6 vs P7) y balancea confirmaciones/cancelaciones (P11 vs P12).
+- **Non-balanced**: usa umbrales del **75%** para la asignación de agentes y del **80%** para confirmaciones.
+
+### Persistencia
+
+[`src/util/CL_Logger.java`](src/util/CL_Logger.java) escribe cada transición disparada en [`logs/transitions.log`](logs/) como `Tn`, lo que permite reconstruir la secuencia exacta de disparos y validarla a posteriori.
+
+### Validación
+
+[`validate_petri_net.py`](validate_petri_net.py) aplica una expresión regular sobre el log para detectar y contar las 4 variantes de invariantes de transición. En ambas corridas commiteadas (balanceada y no balanceada), los **186 invariantes** se reconocieron correctamente y no quedaron transiciones sin procesar.
+
+### Para más detalle
+
+El modelado teórico, las decisiones de diseño completas, el análisis de resultados y las conclusiones se encuentran en [docs/Informe TP2 - Concurrent Life.pdf](docs/Informe%20TP2%20-%20Concurrent%20Life.pdf).
 
 ---
 
@@ -101,17 +185,12 @@ java -cp target/classes Main
 | Argumento | Efecto |
 |---|---|
 | _(ninguno)_ | Modo normal |
-| `--debug` | Activa logging gris de transiciones (verifica invariantes de plaza en cada disparo) |
+| `--debug` | Activa logging gris de transiciones y muestra verificación de invariantes de plaza en cada disparo) |
 
 ### Configuración por defecto
 
-Definida en [`src/config/PetriNetConfig.java`](src/config/PetriNetConfig.java):
-
-- `PLACES = 15`
-- `TRANSITIONS = 12`
-- `INITIAL_TOKENS = 186` (cantidad total de clientes que entran al sistema)
-
-La política (balanceada o no balanceada) y los delays se setean en [`src/Main.java`](src/Main.java).
+* La política (balanceada o no balanceada) se setea en [`src/Main.java`](src/Main.java).
+* Los delays en transiciones se pueden habilitar o deshabilitar en [`src/Main.java`](src/Main.java).
 
 ---
 
@@ -132,13 +211,13 @@ La política (balanceada o no balanceada) y los delays se setean en [`src/Main.j
 │   │   ├── ConfirmationTask.java        #   → Confirmación (T6, T9, T10)
 │   │   ├── CancellationTask.java        #   → Cancelación (T7, T8)
 │   │   └── ExitTask.java                #   → Salida (T11)
-│   └── util/                            # Núcleo de la concurrencia
-│       ├── Monitor.java                 #   → Monitor central (mutex + cola)
+│   └── util/                            
+│       ├── Monitor.java                 #   → Monitor central
 │       ├── MonInterface.java            #   → Interfaz del monitor
 │       ├── PetriNet.java                #   → Representación de la RdP
-│       ├── CL_Queue.java                #   → Cola de espera por transición
+│       ├── CL_Queue.java                #   → Cola de espera del Monitor
 │       ├── CL_Policy.java               #   → Política de resolución de conflictos
-│       └── CL_Logger.java               #   → Persistencia de transiciones disparadas
+│       └── CL_Logger.java               #   → Registro de evolucion de la Red de Petri
 │
 ├── docs/                                # Documentación
 │   ├── Informe TP2 - Concurrent Life.pdf
@@ -149,8 +228,8 @@ La política (balanceada o no balanceada) y los delays se setean en [`src/Main.j
 │   └── PIPE/                            # Archivos de PIPE 4.3.2
 │
 ├── logs/                                # Logs generados por la simulación
-│   ├── transitions_balanced.log         #   → Corrida con política balanceada
-│   ├── transitions_nonbalanced.log      #   → Corrida con política no balanceada
+│   ├── transitions_balanced.log         #   → Ejecución con política balanceada
+│   ├── transitions_nonbalanced.log      #   → Ejecución con política no balanceada
 │   ├── validation_report_balanced.log   #   → Validación de invariantes (balanced)
 │   └── validation_report_nonbalanced.log#   → Validación de invariantes (non-balanced)
 │
@@ -252,57 +331,3 @@ Datos extraídos de los logs commiteados en [`logs/`](logs/). Observaciones a pa
 - La **política no balanceada** activa las 4 variantes.
 
 Reporte completo en [`logs/validation_report_balanced.log`](logs/validation_report_balanced.log) y [`logs/validation_report_nonbalanced.log`](logs/validation_report_nonbalanced.log).
-
----
-
-## Resumen del proyecto
-
-### Modelado
-
-El sistema se modela como una Red de Petri de **15 plazas** y **12 transiciones**, con marcado inicial `{5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0}`. La estructura completa, junto con la asignación de plazas a hilos, se muestra en [`docs/PetriNet_tasks.png`](docs/PetriNet_tasks.png).
-
-### Concurrencia
-
-Cada transición de la RdP se asocia a un hilo Java. En total hay **8 hilos** (ver [`src/tasks/`](src/tasks/)):
-
-```
-Door → Agent1 / Agent2 → Served1 / Served2 → Confirmation / Cancellation → Exit
-```
-
-### Sincronización
-
-[`src/util/Monitor.java`](src/util/Monitor.java) centraliza el disparo de transiciones:
-
-- Usa un `Semaphore` como mutex para garantizar exclusión mutua sobre la RdP.
-- Usa una [`CL_Queue`](src/util/CL_Queue.java) de semáforos para bloquear a los hilos cuya transición no está habilitada.
-- Al disparar una transición, despierta al siguiente hilo bloqueado cuya transición esté habilitada, seleccionándolo mediante una [`CL_Policy`](src/util/CL_Policy.java).
-
-### Política de resolución de conflictos
-
-[`src/util/CL_Policy.java`](src/util/CL_Policy.java) decide qué transición habilitar cuando hay múltiples opciones viables. Tiene dos modos:
-
-- **Balanced**: reparte la carga 50/50 entre agentes (P6 vs P7) y balancea confirmaciones/cancelaciones (P11 vs P12).
-- **Non-balanced**: usa umbrales del **75%** para la asignación de agentes y del **80%** para confirmaciones, favoreciendo la rama menos usada cuando hay desbalance.
-
-### Persistencia
-
-[`src/util/CL_Logger.java`](src/util/CL_Logger.java) escribe cada transición disparada en [`logs/transitions.log`](logs/) como `Tn`, lo que permite reconstruir la secuencia exacta de disparos y validarla a posteriori.
-
-### Validación
-
-[`validate_petri_net.py`](validate_petri_net.py) aplica una expresión regular sobre el log para detectar y contar las 4 variantes de invariantes de transición. En ambas corridas commiteadas (balanceada y no balanceada), los **186 invariantes** se reconocieron correctamente y no quedaron transiciones sin procesar.
-
-### Para más detalle
-
-El modelado teórico, las decisiones de diseño completas, el análisis de resultados y las conclusiones se encuentran en [docs/Informe TP2 - Concurrent Life.pdf](docs/Informe%20TP2%20-%20Concurrent%20Life.pdf).
-
----
-
-## Autores
-
-- **BERNARDI, Mateo**
-- **LEDESMA, Ignacio**
-- **MADRID, Santiago**
-
-**Cátedra:** Programación Concurrente - Año 2024
-**Profesores:** Ventre, Luis Orlando · Ludemann, Mauricio
