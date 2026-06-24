@@ -18,8 +18,7 @@ import util.PetriNet;
 public class Main {
   public static void main(String[] args) throws InterruptedException {
     int totalClients = PetriNetConfig.INITIAL_TOKENS;
-    boolean balancedPolicy = true;
-    boolean delayEnabled = true;
+    boolean balancedPolicy = false;
     boolean debugEnabled = false;
 
     for (String arg : args) {
@@ -38,14 +37,14 @@ public class Main {
       System.exit(1);
     }
 
-    DoorTask door = new DoorTask(monitor, totalClients, delayEnabled);
-    Agent1Task agent1 = new Agent1Task(monitor, delayEnabled);
-    Agent2Task agent2 = new Agent2Task(monitor, delayEnabled);
-    Served1Task served1 = new Served1Task(monitor, delayEnabled);
-    Served2Task served2 = new Served2Task(monitor, delayEnabled);
-    ConfirmationTask confirmation = new ConfirmationTask(monitor, delayEnabled);
-    CancellationTask cancellation = new CancellationTask(monitor, delayEnabled);
-    ExitTask exit = new ExitTask(monitor, totalClients, delayEnabled);
+    DoorTask door = new DoorTask(monitor, totalClients);
+    Agent1Task agent1 = new Agent1Task(monitor);
+    Agent2Task agent2 = new Agent2Task(monitor);
+    Served1Task served1 = new Served1Task(monitor);
+    Served2Task served2 = new Served2Task(monitor);
+    ConfirmationTask confirmation = new ConfirmationTask(monitor);
+    CancellationTask cancellation = new CancellationTask(monitor);
+    ExitTask exit = new ExitTask(monitor, totalClients);
 
     CL_Policy policy = new CL_Policy(balancedPolicy, agent1, agent2, confirmation, cancellation);
     monitor.setPolicy(policy);
@@ -85,20 +84,14 @@ public class Main {
 
     System.out.println(cfgLine);
     System.out.printf("INITIAL_TOKENS = %d%n", totalClients);
-    System.out.printf("delayEnabled   = %b%n", delayEnabled);
     System.out.printf("balancedPolicy = %s%s%s%n", balancedColor, balancedPolicy, ANSI_RESET);
     System.out.printf("debugEnabled   = %b%n", debugEnabled);
-    if (delayEnabled) {
-      System.out.printf("T1  (entrada recepcion)   = %4d ms%n", door.getDelayT1());
-      System.out.printf("T4  (vendedor 2)          = %4d ms%n", Served2Task.getDelayT4());
-      System.out.printf("T5  (vendedor 1)          = %4d ms%n", Served1Task.getDelayT5());
-      System.out.printf(
-          "T8  (cancelacion)         = %4d ms%n", cancellation.getDelayT8(balancedPolicy));
-      System.out.printf(
-          "T9  (confirmacion)        = %4d ms%n", confirmation.getDelayT9(balancedPolicy));
-      System.out.printf(
-          "T10 (pago)                = %4d ms%n", confirmation.getDelayT10(balancedPolicy));
-    }
+    System.out.printf("T1  (entrada recepcion)   = %4d ms%n", rdp.getAlpha(1, policy));
+    System.out.printf("T4  (vendedor 2)          = %4d ms%n", rdp.getAlpha(4, policy));
+    System.out.printf("T5  (vendedor 1)          = %4d ms%n", rdp.getAlpha(5, policy));
+    System.out.printf("T8  (cancelacion)         = %4d ms%n", rdp.getAlpha(8, policy));
+    System.out.printf("T9  (confirmacion)        = %4d ms%n", rdp.getAlpha(9, policy));
+    System.out.printf("T10 (pago)                = %4d ms%n", rdp.getAlpha(10, policy));
     System.out.println(resLine);
 
     final String statsFormat = "%-40s %4d (%6.2f%%)%n";

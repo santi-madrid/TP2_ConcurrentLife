@@ -29,6 +29,11 @@ public class Monitor implements MonInterface {
 
     while (retryFire) {
       if (canFireTransition(transition)) {
+        if (!rdp.isInTimeWindow(transition, policy)) {
+          handleTransitionNotInTimeWindow(transition);
+          return false;
+        }
+
         fireTransitionAndUpdateState(transition);
 
         if (hasWaitingThreads()) {
@@ -36,14 +41,13 @@ public class Monitor implements MonInterface {
           return true;
         } else {
           retryFire = false; // No hay hilos esperando: no se hace handoff.
-          //  El hilo sale del bucle y libera el mutex normalmente (línea 51).
+          // El hilo sale del bucle y libera el mutex normalmente (línea 51).
         }
       } else {
         try {
           handleImpossibleTransition(transition);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
-          return false;
         }
       }
     }
@@ -87,6 +91,24 @@ public class Monitor implements MonInterface {
     firingVector[transition] = 1;
 
     return rdp.isFirePossible(firingVector);
+  }
+
+  private void handleTransitionNotInTimeWindow(int transition) {
+    mutex.release(); // No se puede disparar: no se hace handoff.
+    long remainingTime = rdp.getRemainingTime(transition, policy);
+    debugLog(
+        "Hilo "
+            + Thread.currentThread().getName()
+            + " no puede disparar T"
+            + transition
+            + " porque no está en la ventana de tiempo (quedan "
+            + remainingTime
+            + " ms)");
+    try {
+      Thread.currentThread().sleep(remainingTime);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   private void handleImpossibleTransition(int transition) throws InterruptedException {

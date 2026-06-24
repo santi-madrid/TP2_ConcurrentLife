@@ -15,6 +15,22 @@ public class PetriNet {
   private int[] enabledTransitions;
   private int lastFiredTransition;
   private final boolean debugEnabled;
+  private final long[] enabledTimestamps;
+  private final long[] timeBalancedWindow = {
+    0, // T0
+    110, // T1
+    0, // T2
+    0, // T3
+    50, // T4
+    50, // T5
+    0, // T6
+    0, // T7
+    50, // T8
+    50, // T9
+    50, // T10
+    0, // T11
+  };
+  private final long[] timeUnbalancedWindow = {0, 110, 0, 0, 50, 50, 0, 0, 25, 50, 50, 0};
 
   // Matriz de incidencia:
   // filas representan plazas (15)
@@ -26,23 +42,24 @@ public class PetriNet {
     // marking.length == PLACES
     marking = new int[] {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
     enabledTransitions = new int[TRANSITIONS];
+    enabledTimestamps = new long[TRANSITIONS];
     incidenceMatrix =
         new int[][] {
-            {-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0},
-            {-1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0},
-            {0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 1, 1, -1, -1, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, -1, -1, 1, 0, 1, 0},
-            {0, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, -1},
+          {-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+          {-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0},
+          {-1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0},
+          {0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 1, 1, -1, -1, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, -1, -1, 1, 0, 1, 0},
+          {0, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, -1},
         };
 
     setEnabledTransitions(checkEnabledTransitions());
@@ -100,14 +117,21 @@ public class PetriNet {
   private boolean checkPlaceInvariants() {
     int[] expectedSums = {1, 5, 1, 1, 1, 5};
     int[] actualSums = {
-        marking[1] + marking[2],
-        marking[2] + marking[3] + marking[4],
-        marking[5] + marking[6],
-        marking[7] + marking[8],
-        marking[10] + marking[11] + marking[12] + marking[13],
-        marking[0] + marking[2] + marking[3] + marking[5] + marking[8]
-            + marking[9] + marking[11] + marking[12] + marking[13]
-            + marking[14]
+      marking[1] + marking[2],
+      marking[2] + marking[3] + marking[4],
+      marking[5] + marking[6],
+      marking[7] + marking[8],
+      marking[10] + marking[11] + marking[12] + marking[13],
+      marking[0]
+          + marking[2]
+          + marking[3]
+          + marking[5]
+          + marking[8]
+          + marking[9]
+          + marking[11]
+          + marking[12]
+          + marking[13]
+          + marking[14]
     };
 
     for (int i = 0; i < expectedSums.length; i++) {
@@ -125,12 +149,17 @@ public class PetriNet {
     }
 
     enabledTransitions[transitionIndex] = 1;
+    if (this.enabledTransitions[transitionIndex]
+        == 0) { // Si la transición estaba deshabilitada antes, registramos el timestamp actual
+      enabledTimestamps[transitionIndex] = System.currentTimeMillis();
+    }
   }
 
   public int[] checkEnabledTransitions() {
     int[] calcEnTransitions = new int[TRANSITIONS];
 
-    markTransitionIfEnabled(calcEnTransitions, 0, marking[0] >= 1 && marking[4] >= 1);
+    markTransitionIfEnabled(
+        calcEnTransitions, 0, marking[0] >= 1 && marking[1] == 1 && marking[4] >= 1);
     markTransitionIfEnabled(calcEnTransitions, 1, marking[2] == 1);
     markTransitionIfEnabled(calcEnTransitions, 2, marking[3] >= 1 && marking[6] == 1);
     markTransitionIfEnabled(calcEnTransitions, 3, marking[3] >= 1 && marking[7] == 1);
@@ -144,6 +173,41 @@ public class PetriNet {
     markTransitionIfEnabled(calcEnTransitions, 11, marking[14] >= 1);
 
     return calcEnTransitions;
+  }
+
+  public long getAlpha(int transitionIndex, CL_Policy policy) {
+    if (transitionIndex < 0 || transitionIndex >= TRANSITIONS) {
+      throw new IllegalArgumentException("Invalid transition index: " + transitionIndex);
+    }
+    return policy.isBalanced()
+        ? timeBalancedWindow[transitionIndex]
+        : timeUnbalancedWindow[transitionIndex];
+  }
+
+  public int getRemainingTime(int transitionIndex, CL_Policy policy) {
+    if (transitionIndex < 0 || transitionIndex >= TRANSITIONS) {
+      throw new IllegalArgumentException("Invalid transition index: " + transitionIndex);
+    }
+    long window = getAlpha(transitionIndex, policy);
+    if (window == 0) {
+      return 0;
+    }
+    long currentTime = System.currentTimeMillis();
+    long elapsedTime = currentTime - enabledTimestamps[transitionIndex];
+    return (int) Math.max(0, window - elapsedTime);
+  }
+
+  public boolean isInTimeWindow(int transitionIndex, CL_Policy policy) {
+    if (transitionIndex < 0 || transitionIndex >= TRANSITIONS) {
+      throw new IllegalArgumentException("Invalid transition index: " + transitionIndex);
+    }
+    long window = getAlpha(transitionIndex, policy);
+    if (window == 0) {
+      return true;
+    }
+    long currentTime = System.currentTimeMillis();
+    long elapsedTime = currentTime - enabledTimestamps[transitionIndex];
+    return elapsedTime >= window;
   }
 
   public void updatePN(int[] firingVector) {

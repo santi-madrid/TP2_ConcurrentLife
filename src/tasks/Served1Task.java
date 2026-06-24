@@ -3,34 +3,18 @@ package tasks;
 import util.Monitor;
 
 public class Served1Task extends Thread {
-  private final boolean delayEnabled;
   private final Monitor monitor;
   private static final int TRANSITION_P5 = 5;
-  private static final int DELAY = 50;
 
-  public Served1Task(Monitor monitor, boolean delayEnabled) {
+  public Served1Task(Monitor monitor) {
     this.setName("Served1");
     this.monitor = monitor;
-    this.delayEnabled = delayEnabled;
-  }
-
-  public static int getDelayT5() {
-    return DELAY;
   }
 
   @Override
   public void run() {
     while (true) {
-      if (monitor.fireTransition(TRANSITION_P5)) {
-        if (delayEnabled) {
-          try {
-            sleep(DELAY);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            break;
-          }
-        }
-      }
+      if (monitor.fireTransition(TRANSITION_P5)) {}
     }
   }
 }

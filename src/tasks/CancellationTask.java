@@ -7,39 +7,22 @@ public class CancellationTask extends Thread {
   private static final String ANSI_RED = "\u001B[31m";
 
   private int cancellations;
-  private final boolean delayEnabled;
   private final Monitor monitor;
   private final int[] transitionsToFire = {7, 8};
-  private final int[] delaysNonBalanced = {0, 100};
-  private final int[] delaysBalanced = {0, 50};
-  private boolean isBalanced;
 
-  public int getDelayT8(boolean balanced) {
-    return balanced ? delaysBalanced[1] : delaysNonBalanced[1];
-  }
-
-  public CancellationTask(Monitor monitor, boolean delayEnabled) {
+  public CancellationTask(Monitor monitor) {
     this.setName("Cancellation");
     this.monitor = monitor;
     this.cancellations = 0;
-    this.delayEnabled = delayEnabled;
   }
 
   @Override
   public void run() {
     while (true) {
-      for (int i = 0; i < transitionsToFire.length; i++) {
+      int i = 0;
+      while (i < transitionsToFire.length) {
         if (monitor.fireTransition(transitionsToFire[i])) {
-          if (delayEnabled) {
-            try {
-              int delay =
-                  monitor.getPolicy().isBalanced() ? delaysBalanced[i] : delaysNonBalanced[i];
-              Thread.sleep(delay);
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              return;
-            }
-          }
+          i++;
         }
       }
       cancellations++; // Un ciclo de transiciones equivale a una cancelacion

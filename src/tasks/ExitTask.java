@@ -7,16 +7,13 @@ public class ExitTask extends Thread {
   private static final String ANSI_GREEN = "\u001B[32m";
 
   private int servedClients;
-  private final boolean delayEnabled;
   private final int totalClients;
   private final Monitor monitor;
   private static final int TRANSITION_P14 = 11;
-  private static final int DELAY = 0;
 
-  public ExitTask(Monitor monitor, int totalClients, boolean delayEnabled) {
+  public ExitTask(Monitor monitor, int totalClients) {
     this.setName("Exit");
     this.monitor = monitor;
-    this.delayEnabled = delayEnabled;
 
     this.servedClients = 0;
     this.totalClients = totalClients;
@@ -27,14 +24,6 @@ public class ExitTask extends Thread {
     while (servedClients < totalClients) {
       if (monitor.fireTransition(TRANSITION_P14)) {
         servedClients++;
-        if (delayEnabled) {
-          try {
-            sleep(DELAY);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            break;
-          }
-        }
         System.out.println("Salieron " + servedClients + " personas");
       }
     }
