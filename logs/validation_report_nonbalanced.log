@@ -2,9 +2,11 @@
 VALIDACIÓN DE INVARIANTES - RED DE PETRI
 ======================================================================
 Transiciones cargadas (3237 caracteres)
-Iteración 1: Encontrados 186 invariantes
+Iteración 1: Encontrados 74 invariantes
+Iteración 2: Encontrados 56 invariantes
+Iteración 3: Encontrados 56 invariantes
 ----------------------------------------------------------------------
-RESULTADOS (Iteraciones: 2)
+RESULTADOS (Iteraciones: 4)
 ----------------------------------------------------------------------
 Estado: ✓ VÁLIDO
 Invariantes encontrados: 186
