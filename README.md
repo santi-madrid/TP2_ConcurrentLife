@@ -33,6 +33,10 @@ Repositorio del Trabajo Práctico N° 2 de **Programación Concurrente** (FCEFyN
     - [Concurrencia](#concurrencia)
       - [Política de señalización](#política-de-señalización)
       - [Política de resolución de conflictos](#política-de-resolución-de-conflictos)
+      - [Semántica temporal (ventanas α)](#semántica-temporal-ventanas-α)
+        - [Tabla de α por transición y política](#tabla-de-α-por-transición-y-política)
+        - [Mecanismo](#mecanismo)
+        - [Flujo en el monitor](#flujo-en-el-monitor)
     - [Persistencia](#persistencia)
     - [Validación](#validación)
     - [Para más detalle](#para-más-detalle)
@@ -44,6 +48,7 @@ Repositorio del Trabajo Práctico N° 2 de **Programación Concurrente** (FCEFyN
     - [Argumentos opcionales](#argumentos-opcionales)
     - [Configuración por defecto](#configuración-por-defecto)
   - [Estructura del proyecto](#estructura-del-proyecto)
+  - [Diagramas](#diagramas)
   - [Red de Petri](#red-de-petri)
   - [Análisis con PIPE 4.3.2](#análisis-con-pipe-432)
     - [Capturas y resultados disponibles](#capturas-y-resultados-disponibles)
@@ -128,6 +133,42 @@ En total hay **8 hilos** (ver [`src/tasks/`](src/tasks/)) y [`src/util/Monitor.j
 - **Balanced**: reparte la carga 50/50 entre agentes (P6 vs P7) y balancea confirmaciones/cancelaciones (P11 vs P12).
 - **Non-balanced**: usa umbrales del **75%** para la asignación de agentes y del **80%** para confirmaciones.
 
+#### Semántica temporal (ventanas α)
+
+Cada transición tiene asociada una **ventana de tiempo** α(t) en milisegundos. Una transición `t` solo puede dispararse si, desde el momento en que pasó a estar habilitada en la RdP, transcurrieron al menos `α(t)` milisegundos. El monitor consulta esta condición antes de cada disparo y, cuando no se cumple, el hilo actual se duerme y libera el mutex (sin hacer handoff a ningún otro hilo).
+
+##### Tabla de α por transición y política
+
+| Transición | α balanced (ms) | α non-balanced (ms) | Descripción |
+|---|---|---|---|
+| T1 | 110 | 110 | Entrada a recepción |
+| T4 | 50 | 50 | Atención vendedor 2 |
+| T5 | 50 | 50 | Atención vendedor 1 |
+| T8 | 50 | 25 | Cancelación |
+| T9 | 50 | 50 | Confirmación |
+| T10 | 50 | 50 | Pago |
+| T0, T2, T3, T6, T7, T11 | 0 | 0 | Sin restricción temporal |
+
+##### Mecanismo
+
+- Cuando una transición pasa de deshabilitada a habilitada, [`src/util/PetriNet.java`](src/util/PetriNet.java) registra el instante actual en `enabledTimestamps[t]` (método `markTransitionIfEnabled`).
+- `PetriNet.isInTimeWindow(t)` compara `System.currentTimeMillis() - enabledTimestamps[t]` contra `α(t)`. Si `α(t) = 0`, retorna `true`.
+- `PetriNet.getRemainingTime(t)` devuelve el tiempo restante hasta que la transición salga de la espera inicial; es el valor que usará el monitor para dormir al hilo.
+- El arreglo `timeBalancedWindow` y `timeUnbalancedWindow` en `PetriNet.java` (líneas 19-33) son los catálogos de α para cada política; se seleccionan en `getAlpha(t, policy)`.
+
+##### Flujo en el monitor
+
+Al invocar `Monitor.fireTransition(t)`, después de tomar el mutex:
+
+1. Si la transición **no está habilitada** → se aplica la política de señalización descrita arriba: el hilo se bloquea en `CL_Queue` y se libera el mutex.
+2. Si la transición **está habilitada pero fuera de su ventana de tiempo** → se ejecuta `Monitor.handleTransitionNotInTimeWindow` (líneas 96-112):
+   1. Libera el mutex con `mutex.release()`.
+   2. Duerme el hilo actual con `Thread.sleep(remainingTime)`.
+   3. Retorna `false`
+3. Si la transición **está habilitada y dentro de la ventana** → se dispara normalmente.
+
+El caso 2 **no es handoff**: el mutex queda libre para cualquier hilo de la cola externa. Cuando el `sleep` termina, el hilo competirá por el mutex como cualquier otro.
+
 ### Persistencia
 
 [`src/util/CL_Logger.java`](src/util/CL_Logger.java) escribe cada transición disparada en [`logs/transitions.log`](logs/) como `Tn`, lo que permite reconstruir la secuencia exacta de disparos y validarla a posteriori.
@@ -185,12 +226,11 @@ java -cp target/classes Main
 | Argumento | Efecto |
 |---|---|
 | _(ninguno)_ | Modo normal |
-| `--debug` | Activa logging gris de transiciones y muestra verificación de invariantes de plaza en cada disparo) |
+| `--debug` | Activa logging gris de transiciones y muestra verificación de invariantes de plaza en cada disparo. |
 
 ### Configuración por defecto
 
 * La política (balanceada o no balanceada) se setea en [`src/Main.java`](src/Main.java).
-* Los delays en transiciones se pueden habilitar o deshabilitar en [`src/Main.java`](src/Main.java).
 
 ---
 
@@ -224,7 +264,9 @@ java -cp target/classes Main
 │   ├── Enunciado TP Final Concurrente 2024.pdf
 │   ├── Algoritmos_cantidad_hilos_en_PN-Ventre-Micolini.pdf
 │   ├── PetriNet_tasks.png               # RdP con responsabilidades de hilos
-│   ├── diagrams/                        # Diagramas de clase y secuencia
+│   ├── diagrams/                        # Diagramas UML de la solución
+│   │   ├── diagrama_clases.pdf          #   → Diagrama de clases (paquetes util y tasks)
+│   │   └── diagrama_secuencias.pdf      #   → Diagrama de secuencia del disparo de una transición
 │   └── PIPE/                            # Archivos de PIPE 4.3.2
 │
 ├── logs/                                # Logs generados por la simulación
@@ -238,6 +280,15 @@ java -cp target/classes Main
 ├── checkstyle.xml                       # Reglas de estilo
 └── README.md
 ```
+
+---
+
+## Diagramas
+
+Los diagramas UML del proyecto se encuentran en [`docs/diagrams/`](docs/diagrams/):
+
+- [`docs/diagrams/diagrama_clases.pdf`](docs/diagrams/diagrama_clases.pdf) — Diagrama de **clases** de los paquetes `util` y `tasks`, mostrando las relaciones entre el `Monitor`, `PetriNet`, `CL_Queue`, `CL_Policy`, `CL_Logger` y los hilos (`DoorTask`, `Agent1Task`, `Agent2Task`, `Served1Task`, `Served2Task`, `ConfirmationTask`, `CancellationTask`, `ExitTask`).
+- [`docs/diagrams/diagrama_secuencias.pdf`](docs/diagrams/diagrama_secuencias.pdf) — Diagrama de **secuencia** que describe el orden de llamadas al disparar una transición, incluyendo las dos ramas posibles del monitor: la rama de transición habilitada (que puede pasar por la verificación de la ventana de tiempo) y la rama de transición no habilitada (que se bloquea en `CL_Queue`).
 
 ---
 
