@@ -1,0 +1,33 @@
+======================================================================
+VALIDACIÓN DE INVARIANTES - RED DE PETRI
+======================================================================
+Transiciones cargadas (3069 caracteres)
+Iteración 1: Encontrados 47 invariantes
+Iteración 2: Encontrados 93 invariantes
+Iteración 3: Encontrados 46 invariantes
+----------------------------------------------------------------------
+RESULTADOS (Iteraciones: 4)
+----------------------------------------------------------------------
+Estado: ✓ VÁLIDO
+Invariantes encontrados: 186
+Transiciones procesadas: 3069 / 3069
+Invariantes por variante:
+  • T0T1T2T5T6T9T10T11: 0 - Variante A (T2-T5→T6-T9-T10 = Served1 → Confirmation)
+  • T0T1T2T5T7T8T11: 46 - Variante B (T2-T5→T7-T8 = Served1 → Cancellation)
+  • T0T1T3T4T6T9T10T11: 93 - Variante C (T3-T4→T6-T9-T10 = Served2 → Confirmation)
+  • T0T1T3T4T7T8T11: 47 - Variante D (T3-T4→T7-T8 = Served2 → Cancellation)
+Conteo de transiciones en archivo:
+  • T0: 186
+  • T1: 186
+  • T2: 93
+  • T3: 93
+  • T4: 93
+  • T5: 93
+  • T6: 93
+  • T7: 93
+  • T8: 93
+  • T9: 93
+  • T10: 93
+  • T11: 186
+✓ Todas las transiciones fueron procesadas correctamente
+======================================================================
