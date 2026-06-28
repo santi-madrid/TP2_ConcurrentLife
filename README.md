@@ -90,7 +90,7 @@ En total hay **8 hilos** (ver [`src/tasks/`](src/tasks/)) y [`src/util/Monitor.j
 
 #### Política de señalización
 
-[`src/util/Monitor.java`](src/util/Monitor.java) implementa una política de señalización basada en **handoff** o **pasaje directo de ejecución** entre hilos bloqueados por transición. Respecto de las políticas vistas en clase, se parece principalmente a una variante de **Signal and Exit (SX)**: el hilo que señaliza despierta a otro y sale del monitor. La diferencia importante es que no libera explícitamente el mutex cuando hay un hilo despertado; el mutex queda reservado para el hilo señalizado.
+[`src/util/Monitor.java`](src/util/Monitor.java) implementa una política de señalización basada en **handoff** o **pasaje directo de ejecución** entre hilos bloqueados por transición. Respecto de las políticas vistas en clase, se parece principalmente a una variante de **Signal and Exit (SX)**: el hilo que señaliza despierta a otro y sale del monitor. 
 
 - **Mutex del monitor**: un `Semaphore(1, true)` en [`Monitor.java`](src/util/Monitor.java) garantiza exclusión mutua sobre la Red de Petri. Todo hilo que invoca `fireTransition(T)` intenta tomar este mutex al entrar al monitor.
 - **Cola por transición**: cuando una transición no está habilitada, el hilo libera el mutex y se bloquea en un semáforo específico de esa transición dentro de [`CL_Queue.java`](src/util/CL_Queue.java). Estos semáforos se inicializan con 0 permisos y funcionan como mecanismo de señalización, no como mutex.
@@ -120,7 +120,7 @@ En total hay **8 hilos** (ver [`src/tasks/`](src/tasks/)) y [`src/util/Monitor.j
 | **SC** (Signal and Continue) | El señalizador despierta a otro hilo pero sigue ejecutando dentro del monitor. El despertado debe competir por entrar. | No aplica directamente: el señalizador no sigue ejecutando dentro del monitor cuando despierta a alguien, y el despertado no compite por la entrada. |
 | **SW** (Signal and Wait) | El señalizador se bloquea y cede el monitor al despertado. | No aplica: el señalizador no se bloquea. |
 | **SU** (Signal and Urgent Wait) | El señalizador pasa a una cola urgente o de cortesía. | No aplica: no existe cola urgente ni cola de cortesía. |
-| **SX** (Signal and Exit) | El señalizador despierta a otro hilo y sale del monitor. | Es la política clásica más cercana: el señalizador despierta y retorna. La diferencia es que no libera explícitamente el mutex; se usa un handoff manual hacia el hilo despertado. |
+| **SX** (Signal and Exit) | El señalizador despierta a otro hilo y sale del monitor. | Es la política clásica más cercana: el señalizador despierta y retorna y el señalizado no compite por el monitor |
 
 **Prioridad efectiva**: cuando hay handoff, el hilo despertado tiene prioridad práctica sobre los hilos que esperan entrar por el mutex, porque el señalizador no libera el mutex al público. Los hilos externos recién pueden avanzar cuando no hay ningún hilo habilitado esperando y algún hilo ejecuta `mutex.release()`.
 
